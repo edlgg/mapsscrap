@@ -15,6 +15,27 @@ A Go application that scrapes business information from Google Maps using web au
   - Number of reviews
   - Phone number
 
+## Installation
+
+### Linux/MacOS
+```bash
+# Download latest release (replace ARCH with amd64 or arm64)
+curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_Linux_ARCH.tar.gz | tar xz
+
+# Move to PATH
+sudo mv mapsscrap /usr/local/bin/
+```
+
+### Windows
+1. Download the latest release from https://github.com/edlgg/mapsscrap/releases
+2. Extract the zip file
+3. Add the executable to your PATH or run from the extracted location
+
+### Usage
+```bash
+mapsscrap --help
+```
+
 ## Roadmap
 - [x] Scrape each element in list
 - [x] Save results to CSV

@@ -14,18 +14,27 @@ builds:
       - amd64
       - arm64
     binary: mapsscrap
+    ldflags:
+      - -s -w -X main.version={{.Version}}
 
 archives:
-  - format: tar.gz
+  - id: binaries
+    format: binary
     name_template: >-
       {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else }}{{ .Arch }}{{ end }}
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64{{- else }}{{ .Arch }}{{ end }}
+    
+  - id: archives
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64{{- else }}{{ .Arch }}{{ end }}
     format_overrides:
       - goos: windows
         format: zip
-
+        
 changelog:
   sort: asc
   filters:
