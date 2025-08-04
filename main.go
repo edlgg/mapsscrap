@@ -113,8 +113,13 @@ func runSearch(params SearchParams) {
 		params.RadiusKm,
 		gridStepKm,
 	)
+	text := fmt.Sprintf("Searching %d locations in a radius of %.1f km around (%.6f, %.6f) for query '%s'.",
+		len(gridPoints), params.RadiusKm, params.Latitude, params.Longitude, params.Query)
+	fmt.Println(text)
 
-	bar := progressbar.Default(int64(len(gridPoints)), "Searching locations")
+	estimatedTime := estimateJobTime(len(gridPoints), maxWorkers)
+	barText := fmt.Sprintf("Please wait... Estimated time: %s", estimatedTime)
+	bar := progressbar.Default(int64(len(gridPoints)), barText)
 
 	maxWorkers := maxWorkers
 	results := make(chan []Place, len(gridPoints))
@@ -164,18 +169,35 @@ func runSearch(params SearchParams) {
 	}
 
 	// Create data directory if it doesn't exist
-	dataDir := filepath.Join(workDir, "data", "prospects")
-	if err := os.MkdirAll(dataDir, 0755); err != nil {
-		panic(fmt.Sprintf("Error creating directory: %v", err))
-	}
 	// Create save path with timestamp
-	savePath := filepath.Join(dataDir,
+	savePath := filepath.Join(workDir,
 		fmt.Sprintf("prospects_%s.csv", time.Now().Format("2006-01-02_15-04-05")))
 
 	if err := savePlacesToCSV(allPlaces, savePath); err != nil {
 		panic(fmt.Sprintf("Error saving places to CSV: %v", err))
 	}
 	fmt.Printf("%d places saved to %s\n", len(allPlaces), savePath)
+}
+
+func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
+    if numTasks <= 0 {
+        return 0
+    }
+
+    const taskDuration = 1 * time.Minute
+
+    // If tasks are less than or equal to max workers, only one batch needed
+    if numTasks <= maxWorkers {
+        return taskDuration
+    }
+
+    // Calculate number of batches needed
+    numBatches := int(math.Ceil(float64(numTasks) / float64(maxWorkers)))
+    
+    // Each batch takes taskDuration + 2 seconds pause between batches
+    totalTime := time.Duration(numBatches) * (taskDuration + 2*time.Second)
+
+    return totalTime
 }
 
 func searchWorker(params SearchParams, results chan<- []Place, wg *sync.WaitGroup, bar *progressbar.ProgressBar) {

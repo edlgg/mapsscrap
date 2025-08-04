@@ -1,6 +1,8 @@
 # Google Maps Scraper
 
-A Go application that scrapes business information from Google Maps using web automation. Given a set of coordinates, a query string and a search raduis, the tool collects details like business names, addresses, ratings, review counts, and phone numbers for a given search term and location and saves the results in a CSV file.
+Mapsscraper is a simple and free open-source CLI tool for scraping business information from Google Maps.
+
+Built in less than 500 lines of Go. The application scrapes business information from Google Maps using web automation. Given a set of coordinates, a query string and a search raduis, the tool collects details like business names, addresses, ratings, review counts, and phone numbers for a given search term and location and saves the results in a CSV file.
 
 ## Features
 
@@ -11,45 +13,43 @@ A Go application that scrapes business information from Google Maps using web au
 - 📱 Collects business details:
   - Business name
   - Address
-  - Rating
+  - Stars
   - Number of reviews
   - Phone number
+  - Website
 
 ## Installation
 
-### Linux/MacOS
+Releases can be found on the [GitHub Releases page](https://github.com/edlgg/mapsscrap/releases).
+
+### Linux
 ```bash
-# Download latest release (replace ARCH with amd64 or arm64)
-curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_Linux_ARCH.tar.gz | tar xz
+# One-line installation (x86_64)
+curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_linux_x86_64 -o mapsscrap && chmod +x mapsscrap && sudo mv mapsscrap /usr/local/bin/
 
-# Move to PATH
-sudo mv mapsscrap /usr/local/bin/
+# Or for ARM64
+curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_linux_arm64 -o mapsscrap && chmod +x mapsscrap && sudo mv mapsscrap /usr/local/bin/
 ```
-
-### Windows
-1. Download the latest release from https://github.com/edlgg/mapsscrap/releases
-2. Extract the zip file
-3. Add the executable to your PATH or run from the extracted location
 
 ### Usage
 ```bash
 mapsscrap --help
+mapsscrap --lat 19.4343491 --lon -99.1775742 --query "lawyer" --radius 5
 ```
 
 ## Roadmap
 - [x] Scrape each element in list
 - [x] Save results to CSV
 - [x] Add scrolling to load more results
-- [x] correct address
-- [x] correct stars
+- [x] parse all wanted elements
 - [x] get website for each place
-- [x] get opening hours 
 - [x] add radius search in klm
 - [x] parallelize
 - [x] headless
 - [x] add progress bar
-- [x] add logging
 - [x] convert to cli
-- [ ] research way to easy install
+- [x] research way to easy install
+- [ ] add logging for errors and warnings
+- [ ] add save_path argument. Default should be ./out.csv
 - [ ] add integration tests
 - [ ] add unit tests
