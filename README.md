@@ -49,7 +49,13 @@ mapsscrap --lat 19.4343491 --lon -99.1775742 --query "lawyer" --radius 5
 - [x] add progress bar
 - [x] convert to cli
 - [x] research way to easy install
+- [ ] add coordinates to results and query
+- [ ] env var so only one execution can run at a time
 - [ ] add logging for errors and warnings
+- [ ] add example query and result
+- [ ] make readme more user focus. "Want to get hundreds of potential leads in a couple of minutes? Use this tool to scrape Google Maps for business information."
+- [ ] add comments to methods
 - [ ] add save_path argument. Default should be ./out.csv
 - [ ] add integration tests
 - [ ] add unit tests
+- [ ] functionality for multiple queries and locations

@@ -23,6 +23,7 @@ const (
 	maxRadiusKm = 25.0  // Maximum radius for search
 	gridStepKm  = 2.5   // Distance between grid points in kilometers
 	maxWorkers  = 4     // Maximum number of concurrent workers
+	taskDuration = 45 * time.Second // Estimated duration for each task
 )
 
 type SearchParams struct {
@@ -82,7 +83,7 @@ ratings, review counts, and phone numbers for a given search term and location.`
 func init() {
 	rootCmd.Flags().Float64VarP(&latitude, "lat", "a", 0, "Latitude of search center")
 	rootCmd.Flags().Float64VarP(&longitude, "lon", "o", 0, "Longitude of search center")
-	rootCmd.Flags().StringVarP(&searchTerm, "query", "t", "", "Search query")
+	rootCmd.Flags().StringVarP(&searchTerm, "query", "q", "", "Search query")
 	rootCmd.Flags().Float64VarP(&radiusKm, "radius", "r", 2.0, "Search radius in kilometers")
 
 	rootCmd.MarkFlagRequired("lat")
@@ -184,8 +185,6 @@ func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
         return 0
     }
 
-    const taskDuration = 1 * time.Minute
-
     // If tasks are less than or equal to max workers, only one batch needed
     if numTasks <= maxWorkers {
         return taskDuration
@@ -194,8 +193,8 @@ func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
     // Calculate number of batches needed
     numBatches := int(math.Ceil(float64(numTasks) / float64(maxWorkers)))
     
-    // Each batch takes taskDuration + 2 seconds pause between batches
-    totalTime := time.Duration(numBatches) * (taskDuration + 2*time.Second)
+	// Total time is number of batches times duration of each task
+    totalTime := time.Duration(numBatches) * taskDuration
 
     return totalTime
 }
