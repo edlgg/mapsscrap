@@ -119,7 +119,7 @@ func runSearch(params SearchParams) {
 	)
 
 	// Validate grid points
-	allPlaces := launchWorkers(params, gridPoints)
+	allPlaces := launchScrappingWorkers(params, gridPoints)
 	if len(allPlaces) == 0 {
 		fmt.Println("No places found for the given search parameters.")
 		return
@@ -141,9 +141,9 @@ func runSearch(params SearchParams) {
 	fmt.Printf("%d places saved to %s\n", len(allPlaces), savePath)
 }
 
-// launchWorkers starts multiple goroutines to scrape Google Maps for business information
+// launchScrappingWorkers starts multiple goroutines to scrape Google Maps for business information
 // at various grid points around the specified center coordinates.
-func launchWorkers(params SearchParams, gridPoints []Coordinates) []Place {
+func launchScrappingWorkers(params SearchParams, gridPoints []Coordinates) []Place {
 	text := fmt.Sprintf("Searching %d locations in a radius of %.1f km around (%.6f, %.6f) for query '%s'.",
 		len(gridPoints), params.RadiusKm, params.Latitude, params.Longitude, params.Query)
 	fmt.Println(text)
@@ -196,6 +196,8 @@ func launchWorkers(params SearchParams, gridPoints []Coordinates) []Place {
 	return allPlaces
 }
 
+// estimateJobTime calculates the estimated time to complete the job.
+// Based on the number of batches needed.
 func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
     if numTasks <= 0 {
         return 0
@@ -215,6 +217,8 @@ func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
     return totalTime
 }
 
+// searchWorker performs the actual scraping for a single grid point.
+// It launches a browser, navigates to Google Maps, and extracts information.
 func searchWorker(params SearchParams, results chan<- []Place, wg *sync.WaitGroup, bar *progressbar.ProgressBar) {
 	defer wg.Done()
 	defer bar.Add(1)
@@ -248,6 +252,7 @@ func searchWorker(params SearchParams, results chan<- []Place, wg *sync.WaitGrou
 	}
 }
 
+// containsPlace checks if a place already exists in the list of places.
 func containsPlace(places []Place, newPlace Place) bool {
 	for _, p := range places {
 		if p.Name == newPlace.Name && p.Address == newPlace.Address {
@@ -257,6 +262,8 @@ func containsPlace(places []Place, newPlace Place) bool {
 	return false
 }
 
+// generateSearchGrid creates a grid of coordinates around the center point
+// within the specified radius. The grid points are spaced by stepKm.
 func generateSearchGrid(centerLat, centerLng float64, radiusKm float64, stepKm float64) []Coordinates {
 	// Calculate degree deltas
 	latDelta := radiusKm / kmPerDegree
@@ -281,6 +288,8 @@ func generateSearchGrid(centerLat, centerLng float64, radiusKm float64, stepKm f
 	return points
 }
 
+// scrapeGoogleMaps performs the actual scraping of Google Maps
+// It maps HTML elements to relevant fields.
 func scrapeGoogleMaps(params SearchParams) ([]Place, error) {
 	// Launch browser
 	launch := launcher.New().
