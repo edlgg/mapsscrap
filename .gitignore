@@ -1,1 +1,3 @@
 bin/*
+*.csv
+!example_results/*.csv

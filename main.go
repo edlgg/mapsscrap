@@ -26,6 +26,7 @@ const (
 	taskDuration = 45 * time.Second // Estimated duration for each task
 )
 
+// SearchParams holds the parameters for the search operation
 type SearchParams struct {
 	Latitude   float64
 	Longitude  float64
@@ -33,6 +34,7 @@ type SearchParams struct {
 	RadiusKm   float64
 }
 
+// Place represents a business place with its details
 type Place struct {
 	Name        string      `json:"name"`
 	Address     string      `json:"address"`
@@ -44,6 +46,7 @@ type Place struct {
 	Website     string      `json:"website,omitempty"`
 }
 
+// Coordinates represents a geographical point with latitude and longitude
 type Coordinates struct {
 	Lat float64 `json:"lat"`
 	Lon float64 `json:"lon"`
@@ -57,7 +60,7 @@ var (
 	radiusKm   float64
 )
 
-var rootCmd = &cobra.Command{
+var runSearchCmd = &cobra.Command{
 	Use:   "mapsscrap",
 	Short: "A Google Maps business scraper",
 	Long: `mapsscrap is a CLI tool that scrapes business information from Google Maps 
@@ -71,49 +74,76 @@ ratings, review counts, and phone numbers for a given search term and location.`
 			RadiusKm:   radiusKm,
 		}
 
-		if params.RadiusKm > maxRadiusKm {
-			return fmt.Errorf("radius too large, maximum is %v km", maxRadiusKm)
-		}
-
 		runSearch(params)
 		return nil
 	},
 }
 
 func init() {
-	rootCmd.Flags().Float64VarP(&latitude, "lat", "a", 0, "Latitude of search center")
-	rootCmd.Flags().Float64VarP(&longitude, "lon", "o", 0, "Longitude of search center")
-	rootCmd.Flags().StringVarP(&searchTerm, "query", "q", "", "Search query")
-	rootCmd.Flags().Float64VarP(&radiusKm, "radius", "r", 2.0, "Search radius in kilometers")
+	runSearchCmd.Flags().Float64VarP(&latitude, "lat", "a", 0, "Latitude of search center")
+	runSearchCmd.Flags().Float64VarP(&longitude, "lon", "o", 0, "Longitude of search center")
+	runSearchCmd.Flags().StringVarP(&searchTerm, "query", "q", "", "Search query")
+	runSearchCmd.Flags().Float64VarP(&radiusKm, "radius", "r", 2.0, "Search radius in kilometers")
 
-	rootCmd.MarkFlagRequired("lat")
-	rootCmd.MarkFlagRequired("lon")
-	rootCmd.MarkFlagRequired("query")
+	runSearchCmd.MarkFlagRequired("lat")
+	runSearchCmd.MarkFlagRequired("lon")
+	runSearchCmd.MarkFlagRequired("query")
 }
 
 func main() {
 	Execute()
 }
 
+// Execute runs the root command and handles any errors
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := runSearchCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
+// runSearch executes the search operation based on provided parameters
+// It generates a grid of points within the specified radius and launches workers
+// to scrape Google Maps for business information at each point.
 func runSearch(params SearchParams) {
 	if params.RadiusKm > maxRadiusKm {
-		fmt.Println("Radius too large, maximum is 25km")
-		return
+		fmt.Println("Radius is very large, this may take a long time.")
 	}
 
+	// Generate grid points around the center coordinates
 	gridPoints := generateSearchGrid(
 		params.Latitude,
 		params.Longitude,
 		params.RadiusKm,
 		gridStepKm,
 	)
+
+	// Validate grid points
+	allPlaces := launchWorkers(params, gridPoints)
+	if len(allPlaces) == 0 {
+		fmt.Println("No places found for the given search parameters.")
+		return
+	}
+
+	// Save results to CSV file
+	workDir, err := os.Getwd()
+	if err != nil {
+		fmt.Printf("Error getting current working directory: %v\n", err)
+		return
+	}
+	now := time.Now()
+	fileName := fmt.Sprintf("prospects_%s.csv", now.Format("2006-01-02_15-04-05"))
+	savePath := filepath.Join(workDir, fileName)
+	if err := savePlacesToCSV(allPlaces, savePath); err != nil {
+		fmt.Printf("Error saving places to CSV: %v\n", err)
+		return
+	}
+	fmt.Printf("%d places saved to %s\n", len(allPlaces), savePath)
+}
+
+// launchWorkers starts multiple goroutines to scrape Google Maps for business information
+// at various grid points around the specified center coordinates.
+func launchWorkers(params SearchParams, gridPoints []Coordinates) []Place {
 	text := fmt.Sprintf("Searching %d locations in a radius of %.1f km around (%.6f, %.6f) for query '%s'.",
 		len(gridPoints), params.RadiusKm, params.Latitude, params.Longitude, params.Query)
 	fmt.Println(text)
@@ -163,21 +193,7 @@ func runSearch(params SearchParams) {
 			}
 		}
 	}
-
-	workDir, err := os.Getwd()
-	if err != nil {
-		panic(fmt.Sprintf("Error getting working directory: %v", err))
-	}
-
-	// Create data directory if it doesn't exist
-	// Create save path with timestamp
-	savePath := filepath.Join(workDir,
-		fmt.Sprintf("prospects_%s.csv", time.Now().Format("2006-01-02_15-04-05")))
-
-	if err := savePlacesToCSV(allPlaces, savePath); err != nil {
-		panic(fmt.Sprintf("Error saving places to CSV: %v", err))
-	}
-	fmt.Printf("%d places saved to %s\n", len(allPlaces), savePath)
+	return allPlaces
 }
 
 func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
@@ -321,6 +337,9 @@ func scrapeGoogleMaps(params SearchParams) ([]Place, error) {
 	return places, nil
 }
 
+// extractPlaceDetails extracts details of a place from the given element
+// It retrieves the name, address, rating, reviews, phone number, opening hours, and website
+// from the Google Maps search result element.
 func extractPlaceDetails(element *rod.Element, params SearchParams) Place {
 	place := Place{
 		Coordinates: Coordinates{
@@ -380,6 +399,7 @@ func extractPlaceDetails(element *rod.Element, params SearchParams) Place {
 	return place
 }
 
+// savePlacesToCSV saves the list of places to a CSV file.
 func savePlacesToCSV(places []Place, filename string) error {
 	file, err := os.Create(filename)
 	if err != nil {
