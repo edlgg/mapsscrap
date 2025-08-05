@@ -20,10 +20,10 @@ import (
 
 const (
 	kmPerDegree = 111.0 // Approximate number of kilometers per degree of latitude
-	maxRadiusKm = 25.0  // Maximum radius for search
+	maxRecommendedRadiusKm = 25.0  // Maximum recommended radius for scraping
 	gridStepKm  = 2.5   // Distance between grid points in kilometers
 	maxWorkers  = 4     // Maximum number of concurrent workers
-	taskDuration = 45 * time.Second // Estimated duration for each task
+	taskTimeout = 45 * time.Second // Timeout for each scraping task
 )
 
 // SearchParams holds the parameters for the search operation
@@ -111,7 +111,7 @@ func Execute() {
 // It generates a grid of points within the specified radius and launches workers
 // to scrape Google Maps for business information at each point.
 func runSearch(params SearchParams) {
-	if params.RadiusKm > maxRadiusKm {
+	if params.RadiusKm > maxRecommendedRadiusKm {
 		fmt.Println("Radius is very large, this may take a long time.")
 	}
 
@@ -210,14 +210,14 @@ func estimateJobTime(numTasks int, maxWorkers int) time.Duration {
 
     // If tasks are less than or equal to max workers, only one batch needed
     if numTasks <= maxWorkers {
-        return taskDuration
+        return taskTimeout
     }
 
     // Calculate number of batches needed
     numBatches := int(math.Ceil(float64(numTasks) / float64(maxWorkers)))
     
 	// Total time is number of batches times duration of each task
-    totalTime := time.Duration(numBatches) * taskDuration
+    totalTime := time.Duration(numBatches) * taskTimeout
 
     return totalTime
 }
@@ -229,7 +229,7 @@ func searchWorker(params SearchParams, results chan<- []Place, wg *sync.WaitGrou
 	defer bar.Add(1)
 
 	// Create context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), taskTimeout)
 	defer cancel()
 
 	// Create done channel for timeout handling
