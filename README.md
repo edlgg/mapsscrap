@@ -32,16 +32,14 @@ mapsscrap --lat 19.4343491 --lon -99.1775742 --query "prosthodontists" --radius 
 
 Releases can be found on the [GitHub Releases page](https://github.com/edlgg/mapsscrap/releases).
 
-If you are not sure how this works copy the content of this file and of the release page to you LLM of choice and ask it how to do it.
+If you are not sure how this works copy the content of this file and of [the releases page](https://github.com/edlgg/mapsscrap/releases) to your LLM of choice and ask it how to do it.
 It should take 2 or 3 commands at the terminal to get it running.
 
-### Linux Example
+### Linux (x86_64) Example
 ```bash
-# One-line installation (x86_64)
-curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_linux_x86_64 -o mapsscrap && chmod +x mapsscrap && sudo mv mapsscrap /usr/local/bin/
-
-# Or for ARM64
-curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_linux_arm64 -o mapsscrap && chmod +x mapsscrap && sudo mv mapsscrap /usr/local/bin/
+curl -L https://github.com/edlgg/mapsscrap/releases/latest/download/mapsscrap_linux_x86_64 -o mapsscrap
+chmod +x mapsscrap
+sudo mv mapsscrap /usr/local/bin/
 ```
 
 ### Usage
@@ -51,6 +49,10 @@ mapsscrap --lat 19.4343491 --lon -99.1775742 --query "lawyer" --radius 20
 ```
 
 ### FAQ
+
+- **I have no idea how to install and run this. What should I do?**
+
+    Copy the content of this file and of [the releases page](https://github.com/edlgg/mapsscrap/releases) to your LLM of choice and ask it how to do it. It should take 3 commands at the terminal to get it running.
 
 - **How can I get the coordinates for a location?**
 
