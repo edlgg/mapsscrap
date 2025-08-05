@@ -60,6 +60,8 @@ var (
 	radiusKm   float64
 )
 
+// runSearchCmd runs the runSearch job
+// It is the only command in this CLI tool
 var runSearchCmd = &cobra.Command{
 	Use:   "mapsscrap",
 	Short: "A Google Maps business scraper",
@@ -79,6 +81,7 @@ ratings, review counts, and phone numbers for a given search term and location.`
 	},
 }
 
+// init initializes the command-line flags for the runSearchCmd
 func init() {
 	runSearchCmd.Flags().Float64VarP(&latitude, "lat", "a", 0, "Latitude of search center")
 	runSearchCmd.Flags().Float64VarP(&longitude, "lon", "o", 0, "Longitude of search center")
@@ -90,6 +93,7 @@ func init() {
 	runSearchCmd.MarkFlagRequired("query")
 }
 
+// main is the entry point of the application
 func main() {
 	Execute()
 }

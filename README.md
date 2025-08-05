@@ -75,8 +75,8 @@ mapsscrap --lat 19.4343491 --lon -99.1775742 --query "lawyer" --radius 20
 - [ ] add coordinates and query to results
 - [ ] env var so only one execution can run at a time
 - [ ] add logging for errors and warnings
-- [ ] make readme more user focus. "Want to get hundreds of potential leads in a couple of minutes? Use this tool to scrape Google Maps for business information."
-- [ ] add save_path argument. Default should be ./out.csv
+- [ ] make readme more user focused. "Want to get hundreds of potential leads in a couple of minutes?"
+- [ ] add save_path argument. Default should be ./output/name.csv
 - [ ] add integration tests
 - [ ] add unit tests
-- [ ] functionality for multiple queries and locations
+- [ ] functionality for multiple queries and coordinates
