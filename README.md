@@ -50,6 +50,11 @@ mapsscrap --help
 mapsscrap --lat 19.4343491 --lon -99.1775742 --query "lawyer" --radius 20
 ```
 
+### FAQ
+
+- **How can I get the coordinates for a location?**
+  Go to Google Maps and click on a location. The url will look like this: `https://www.google.com/maps/place/place-name/@19.4343491,-99.1775742/data=...`. The coordinates are the two numbers after the `@` part of the URL.
+
 ## Roadmap
 - [x] Scrape each element in list
 - [x] Save results to CSV
