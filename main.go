@@ -52,7 +52,8 @@ type Coordinates struct {
 	Lon float64 `json:"lon"`
 }
 
-
+// Global variables for command-line flags
+// Need to have these because of the way Cobra works
 var (
 	latitude   float64
 	longitude  float64
